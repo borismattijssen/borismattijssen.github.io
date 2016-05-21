@@ -1,0 +1,69 @@
+title:            Boris Mattijssen
+tagline:          A Cup of Figures
+description: "Reader, you have been warned! This definitly is not a blog. This is where I keep an extended version of my notes and writing. Do not attempt to find any meaning or purpose in my writing. You will fail miserably."
+# An awesome quote for your website
+quote:  "Cringe. Now bad poetry."
+canonical: borismattijssen.github.io
+#Comment out the below line when pushing to gh-pages
+#url: http://10.42.0.1/_site
+#For local development only. Comment it out.
+file_end: .html
+url: http://localhost:4000
+
+# Owner/author information
+owner:
+  name:           Boris Mattijssen
+  avatar:         avatar.jpg
+  bio:
+  email:          borismattijssen@gmail.com
+  twitter:
+  github:         borismattijssen
+  instagram:
+  dribbble:
+  googleplus:
+  disqus:
+  location:
+  # Plug in your disqus shortname!
+
+tools:
+  standards:      "HTML, SCSS, Jekyll"
+  software:       "git"
+
+# Open Graph customization
+opengraph:
+  locale:           en_US
+
+# Links to include in top navigation
+# For external links add external: true
+links:
+  - title: About
+    url: /about
+
+# http://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+timezone:    America/New_York
+future:      true
+highlighter: pygments
+markdown:    kramdown
+
+kramdown:
+  auto_ids: true
+  footnote_nr: 1
+  entity_output: as_char
+  toc_levels: 1..6
+  enable_coderay: false
+
+  coderay:
+    coderay_line_numbers:
+    coderay_line_numbers_start: 1
+    coderay_tab_width: 4
+    coderay_bold_every: 10
+    coderay_css: class
+
+sass:
+    style: :compressed
+
+# https://github.com/mojombo/jekyll/wiki/Permalinks
+permalink:   /:categories/:title
+
+include: [".htaccess"]
+exclude: ["lib", "config.rb", "Capfile", "config", "log", "Rakefile", "Rakefile.rb", "tmp"]
