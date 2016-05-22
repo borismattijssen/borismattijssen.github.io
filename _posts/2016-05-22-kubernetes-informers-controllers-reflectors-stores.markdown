@@ -5,8 +5,7 @@ description: "Kubernetes offers these powerful structures to get a local represe
 category: articles
 tags: ["software", "kubernetes"]
 mathjax: true
-typefix:
-   indent: true
+comments: true
 date: 2016-05-22T20:41:00+02:00
 ---
 
