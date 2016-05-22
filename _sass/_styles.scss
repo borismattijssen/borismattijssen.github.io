@@ -50,9 +50,15 @@ p:first-of-type > em:first-of-type {
 }
 
 em {
-    padding: 1px 2px;
-    border-radius: 2px;
-    background: #ffe8c0;
+    // padding: 1px 2px;
+    // border-radius: 2px;
+    // background: #ffe8c0;
+    font-family: 'Roboto Mono', 'Courier New';
+    font-size: 90%;
+    background-color: #f0f0f0;
+    padding: 4px;
+    border-radius: 5px;
+    // font-weight: bold;
 }
 
 strong {
@@ -87,27 +93,39 @@ blockquote, blockquote p {
 /*   Code Formatting    */
 
 code {
-    color: $accent;
-    font-family: "Courier New", "Courier";
+    font-family: 'Roboto Mono', "Courier New", "Courier";
     font-size: 90%;
-    font-weight: bold;
 }
+code.highlighter-rouge {
+  background-color: #f0f0f0;
+  // background-color: #282C34;
+  // color: #A2B2BF;
+  padding: 4px;
+  border-radius: 5px;
+}
+//     background-color: #f0f0f0;
+//     padding: 4px;
+//     border-radius: 5px;
+//     font-weight: bold;
+// }
 
 .highlight {
-    background: $black;
+    background-color: #282C34;
     padding: 12px;
     border-radius: 4px;
     margin-bottom: $lh;
     overflow-x: scroll;
 
     code {
-        color: $white;
-        font-family: "Monaco", "Courier New", "Courier";
+        color: #A2B2BF;
         font-size: .9em;
+        line-height: 1.5em;
         .lineno {
             margin-right: $lh/2;
-            color: $grey-light;
-            line-height: 2em;
+            color: #4B5262;
+            border-right: solid 1px #3C4049;
+            padding-right: 10px;
+            text-align: right;
         }
         .nt {
             color: #c85b5c;
@@ -234,6 +252,27 @@ header.site-header {
       max-width: 90vw;
   }
 
+}
+
+#scroll-back {
+  position: absolute;
+  display: none;
+
+  a {
+  color: $black;
+  @include transit(all, .2s, ease-in-out);
+  font-weight: 700;
+  font-size: 20px;
+  font-family: "Source Sans Pro", "Open Sans", "Helvetica Neue", "Arial", sans-serif;
+  line-height: 100%;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+
+  &:hover {
+    color: $accent2;
+    @include transit(all, .2s, ease-in-out);
+    }
+  }
 }
 
 #bump .darken {
@@ -539,7 +578,7 @@ header.site-header nav {
     h1 {
         font-family: 'AlteHaasGroteskB';
         font-style: none;
-        font-size: 8.35em;
+        font-size: 7em;
     }
 
     .tiny-bar {
