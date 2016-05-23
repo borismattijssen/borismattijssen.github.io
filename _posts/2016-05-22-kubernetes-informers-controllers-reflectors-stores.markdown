@@ -455,4 +455,4 @@ The *Process* function deals with all the Delta events. It calls the correspondi
 
 I hope this article has given you a clear representation of the Controller, Informer, Reflector and Store concepts used in Kubernetes, that make your life so much nicer. Please feel free to comment or critize :)
 
-Also many kudos to [@nov1n](https://github.com/nov1n){:target="_blank"}, who helped me with the research.
+Also, many kudos to [@nov1n](https://github.com/nov1n){:target="_blank"} who helped me with the research.
