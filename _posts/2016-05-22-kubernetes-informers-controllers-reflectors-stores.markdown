@@ -185,7 +185,7 @@ func (c *Controller) processLoop() {
 We now know how the *Process* function from the example is called, but we still don't know how stuff gets in the FIFO Queue. To understand how this works, we'll have to dig into the Reflector.
 
 ## Reflectors
-According to the comment in [reflector.go](//github.com/kubernetes/kubernetes/blob/82cb4c17581752ae9f00bd746a63e529149c04b4/pkg/client/cache/reflector.go), a "Reflector watches a specified resource and causes all changes to be reflected in the given store". In our example the resource is the *source* from line 3 and the *store* is the DeltaFIFO from line 12.
+According to the comment in [reflector.go](//github.com/kubernetes/kubernetes/blob/82cb4c17581752ae9f00bd746a63e529149c04b4/pkg/client/cache/reflector.go){:target="_blank"}, a "Reflector watches a specified resource and causes all changes to be reflected in the given store". In our example the resource is the *source* from line 3 and the *store* is the DeltaFIFO from line 12.
 
 When the reflector was created, its *RunUntil* method was called. Let's look at what it does:
 {% highlight go linenos %}
@@ -199,7 +199,7 @@ func (r *Reflector) RunUntil(stopCh <-chan struct{}) {
 }
 {% endhighlight %}
 
-So it keeps calling ListAndWatch, until the `stopCh` receives a message. Now let's dive into *[ListAndWatch](//github.com/kubernetes/kubernetes/blob/82cb4c17581752ae9f00bd746a63e529149c04b4/pkg/client/cache/reflector.go#L281)* where all the real magic happens:
+So it keeps calling ListAndWatch, until the `stopCh` receives a message. Now let's dive into *[ListAndWatch](//github.com/kubernetes/kubernetes/blob/82cb4c17581752ae9f00bd746a63e529149c04b4/pkg/client/cache/reflector.go#L281){:target="_blank"}* where all the real magic happens:
 <a name="list-and-watch" />
 {% highlight go linenos %}
 // ListAndWatch first lists all items and get the resource version at the moment of call,
@@ -261,7 +261,7 @@ func (r *Reflector) ListAndWatch(stopCh <-chan struct{}) error {
 The comment above the method says: "ListAndWatch first lists all items and get[s] the resource version at the moment of call, and then use[s] the resource version to watch". So basically this is what happens:
 ![Reflector timeline]({{ site.url }}/images/Reflector Time Diagram.png)
 
-At time <span style="color:#f44d82">t=0</span> we list the ListerWatcher -- which is the upstream source in our case. From the List we get the highest *resourceVersion* of all items in the list. At <span style="color:#4d82f4">t>0</span> we keep watching the ListerWatcher for changes newer then the obtained resourceVersion. <span class="nice-italic">If you don't know what resource versions are, check the [API conventions](//github.com/kubernetes/kubernetes/blob/master/docs/devel/api-conventions.md#concurrency-control-and-consistency).</span>
+At time <span style="color:#f44d82">t=0</span> we list the ListerWatcher -- which is the upstream source in our case. From the List we get the highest *resourceVersion* of all items in the list. At <span style="color:#4d82f4">t>0</span> we keep watching the ListerWatcher for changes newer then the obtained resourceVersion. <span class="nice-italic">If you don't know what resource versions are, check the [API conventions](//github.com/kubernetes/kubernetes/blob/master/docs/devel/api-conventions.md#concurrency-control-and-consistency){:target="_blank"}.</span>
 
 So how does that translate to the code of ListAndWatch? At line 14 (<span style="color:#f44d82">t=0</span>) *List* gets called. The *items* from the list are passed to the syncWith method. SyncWith calls store.Replace with the items of the list:
 {% highlight go linenos %}
@@ -276,7 +276,7 @@ func (r *Reflector) syncWith(items []runtime.Object, resourceVersion string) err
 
 <span class="nice-italic">I'll explain how store.Replace works later</span>
 
-After the initial list we end up in a never ending for loop (<span style="color:#4d82f4">t>0</span>). In this loop we call the *[watchHandler](//github.com/kubernetes/kubernetes/blob/82cb4c17581752ae9f00bd746a63e529149c04b4/pkg/client/cache/reflector.go#L369)* method with a *[watch.Interface](//github.com/kubernetes/kubernetes/blob/82cb4c17581752ae9f00bd746a63e529149c04b4/pkg/watch/watch.go#L26)*. The contents of watchHandler is the following piece of blocking code:
+After the initial list we end up in a never ending for loop (<span style="color:#4d82f4">t>0</span>). In this loop we call the *[watchHandler](//github.com/kubernetes/kubernetes/blob/82cb4c17581752ae9f00bd746a63e529149c04b4/pkg/client/cache/reflector.go#L369){:target="_blank"}* method with a *[watch.Interface](//github.com/kubernetes/kubernetes/blob/82cb4c17581752ae9f00bd746a63e529149c04b4/pkg/watch/watch.go#L26){:target="_blank"}*. The contents of watchHandler is the following piece of blocking code:
 
 {% highlight go linenos %}
 // watchHandler watches w and keeps *resourceVersion up to date.
@@ -313,14 +313,14 @@ func (r *Reflector) watchHandler(w watch.Interface, resourceVersion *string, res
 
 The interesting code is on lines 14 - 23. Watch events from the upstream are caught and corresponding *store* methods are called. Another piece of interesting code is on lines 11 - 12. When a message is received on *resyncCh*, the watchHandler returns. So how do messages end up in resyncCh?
 
-When we take a look back to the code of [ListAndWatch](#list-and-watch), we find the answer on lines 6 - 7. Line 6 calls the *[resyncChan](//github.com/kubernetes/kubernetes/blob/82cb4c17581752ae9f00bd746a63e529149c04b4/pkg/client/cache/reflector.go#L233)* method, which returns a timer channel that receives a message after r.resyncPeriod nanoseconds. This channel is passed to watchHandler, such that it returns after r.resyncPeriod ns. When watchHandler returns, the ListAndWatch method can finally reach the call to the *[canForceResyncNow](//github.com/kubernetes/kubernetes/blob/82cb4c17581752ae9f00bd746a63e529149c04b4/pkg/client/cache/reflector.go#L269)* method. CanForceResyncNow returns true if we're [close enough](//github.com/kubernetes/kubernetes/blob/82cb4c17581752ae9f00bd746a63e529149c04b4/pkg/client/cache/reflector.go#L88) to a next planned periodic resync. In that case *store.Resync* is called. So in the end the situation looks like this:
+When we take a look back to the code of [ListAndWatch](#list-and-watch), we find the answer on lines 6 - 7. Line 6 calls the *[resyncChan](//github.com/kubernetes/kubernetes/blob/82cb4c17581752ae9f00bd746a63e529149c04b4/pkg/client/cache/reflector.go#L233){:target="_blank"}* method, which returns a timer channel that receives a message after r.resyncPeriod nanoseconds. This channel is passed to watchHandler, such that it returns after r.resyncPeriod ns. When watchHandler returns, the ListAndWatch method can finally reach the call to the *[canForceResyncNow](//github.com/kubernetes/kubernetes/blob/82cb4c17581752ae9f00bd746a63e529149c04b4/pkg/client/cache/reflector.go#L269){:target="_blank"}* method. CanForceResyncNow returns true if we're [close enough](//github.com/kubernetes/kubernetes/blob/82cb4c17581752ae9f00bd746a63e529149c04b4/pkg/client/cache/reflector.go#L88){:target="_blank"} to a next planned periodic resync. In that case *store.Resync* is called. So in the end the situation looks like this:
 
 ![Reflector timeline]({{ site.url }}/images/Reflector Time Diagram2.png)
 
 So now we know when the Reflector calls the DeltaFIFO *store*. Let's figure out how the store works!
 
 ## DeltaFIFO Store
-According to the comments in [delta_fifo.go](//github.com/kubernetes/kubernetes/blob/82cb4c17581752ae9f00bd746a63e529149c04b4/pkg/client/cache/delta_fifo.go), a "DeltaFIFO is a producer-consumer queue, where a Reflector is intended to be the producer, and the consumer is whatever calls the Pop() method". In our case the *processLoop* method of our controller is the consumer.
+According to the comments in [delta_fifo.go](//github.com/kubernetes/kubernetes/blob/82cb4c17581752ae9f00bd746a63e529149c04b4/pkg/client/cache/delta_fifo.go){:target="_blank"}, a "DeltaFIFO is a producer-consumer queue, where a Reflector is intended to be the producer, and the consumer is whatever calls the Pop() method". In our case the *processLoop* method of our controller is the consumer.
 
 From its definition we get that the DeltaFIFO holds a *queue*, which is an array of strings, and an *items* map, whose keys correspond to the strings in the *queue*:
 {% highlight go linenos %}
@@ -337,15 +337,15 @@ type DeltaFIFO struct {
 Let's have a look at the Add, Update, Delete, Replace, and Resync methods that were called from the Reflector.
 
 ### Add, Update, and Delete
-The Add, Update and Delete methods all call the *[queueActionLocked](//github.com/kubernetes/kubernetes/blob/82cb4c17581752ae9f00bd746a63e529149c04b4/pkg/client/cache/delta_fifo.go#L273)* method with the corresponding *[DeltaType](//github.com/kubernetes/kubernetes/blob/82cb4c17581752ae9f00bd746a63e529149c04b4/pkg/client/cache/delta_fifo.go#L513)*s.
+The Add, Update and Delete methods all call the *[queueActionLocked](//github.com/kubernetes/kubernetes/blob/82cb4c17581752ae9f00bd746a63e529149c04b4/pkg/client/cache/delta_fifo.go#L273){:target="_blank"}* method with the corresponding *[DeltaType](//github.com/kubernetes/kubernetes/blob/82cb4c17581752ae9f00bd746a63e529149c04b4/pkg/client/cache/delta_fifo.go#L513){:target="_blank"}*s.
 In queueActionLocked the given *obj* gets inserted in the queue.
 
 ### Replace
-[Replace](//github.com/kubernetes/kubernetes/blob/82cb4c17581752ae9f00bd746a63e529149c04b4/pkg/client/cache/delta_fifo.go#L393) gets a list of items. It enqueues each item with a *Sync* DeltaType. It then uses the *knownObject* -- which is a reference to the downstream store in our case -- to see if items were deleted. If so *Deleted* events get enqueued.
+[Replace](//github.com/kubernetes/kubernetes/blob/82cb4c17581752ae9f00bd746a63e529149c04b4/pkg/client/cache/delta_fifo.go#L393){:target="_blank"} gets a list of items. It enqueues each item with a *Sync* DeltaType. It then uses the *knownObject* -- which is a reference to the downstream store in our case -- to see if items were deleted. If so *Deleted* events get enqueued.
 <span class="nice-italic">Note that this is the reason why we got Sync events in the controller example. The three pods were inserted before the reflector started at <span style="color:#f44d82">t=0</span> (maybe not always the case, because starting the reflector and inserting pods in the store are parallel tasks). So the three pods were found during the initial list, which called the store.Replace method. Since store.Replace only fires Sync events for new items, we didn't find any Added events.</span>
 
 ### Resync
-[Resync](//github.com/kubernetes/kubernetes/blob/82cb4c17581752ae9f00bd746a63e529149c04b4/pkg/client/cache/delta_fifo.go#L459) will send a Sync event for all items in *knownObjects* -- which is our downstream store.
+[Resync](//github.com/kubernetes/kubernetes/blob/82cb4c17581752ae9f00bd746a63e529149c04b4/pkg/client/cache/delta_fifo.go#L459){:target="_blank"} will send a Sync event for all items in *knownObjects* -- which is our downstream store.
 
 ## Recap on Controller, Reflector and Store
 Okay, I get that that was a lot of new information. Let's try to clear up what we've just learned.
@@ -372,7 +372,7 @@ The FIFO queue:
 * has a queue of Deltas for objects that were listed and watched by the Reflector.
 
 ## Informer
-We now know how the Controller, Reflector and FIFO Queue work together to stay in sync with the upstream source. So let's have a look at how the *Informer* uses these concepts to sync the upstream source to the downstream source. According to the comments [controller.go](//github.com/kubernetes/kubernetes/blob/82cb4c17581752ae9f00bd746a63e529149c04b4/pkg/controller/framework/controller.go), "NewInformer returns a cache.Store and a controller for populating the store while also providing event notifications". This is how the *[NewInformer](//github.com/kubernetes/kubernetes/blob/82cb4c17581752ae9f00bd746a63e529149c04b4/pkg/controller/framework/controller.go#L198)* function looks:
+We now know how the Controller, Reflector and FIFO Queue work together to stay in sync with the upstream source. So let's have a look at how the *Informer* uses these concepts to sync the upstream source to the downstream source. According to the comments [controller.go](//github.com/kubernetes/kubernetes/blob/82cb4c17581752ae9f00bd746a63e529149c04b4/pkg/controller/framework/controller.go){:target="_blank"}, "NewInformer returns a cache.Store and a controller for populating the store while also providing event notifications". This is how the *[NewInformer](//github.com/kubernetes/kubernetes/blob/82cb4c17581752ae9f00bd746a63e529149c04b4/pkg/controller/framework/controller.go#L198){:target="_blank"}* function looks:
 
 {% highlight go linenos %}
 func NewInformer(
@@ -454,3 +454,5 @@ The *Process* function deals with all the Delta events. It calls the correspondi
 ---
 
 I hope this article has given you a clear representation of the Controller, Informer, Reflector and Store concepts used in Kubernetes, that make your life so much nicer. Please feel free to comment or critize :)
+
+Also many kudos to [@nov1n](https://github.com/nov1n){:target="_blank"}, who helped me with the research.
