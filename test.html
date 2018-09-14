@@ -1,1 +1,61 @@
-Test
+<style type="text/css">
+  body {
+    font-family: Helvetica Neue,Helvetica,Arial,sans-serif;
+    font-size: 12px;
+  }
+  .budget {
+    margin: 0;
+    font-size: 40px;
+  }
+  .budget-high {
+    font-size: 20px;
+  }
+</style>
+
+<p>Your bank account should now contain:</p>
+<p>
+  <span class="budget">&euro; <span id="amount">0</span></span>
+  <span class="budget-high">(<span id="amount-high">0</span>)</span>
+</p>
+
+<script>
+  var dailyBudget = 20;
+  var payday = 24;
+
+  var d = new Date();
+  var day = d.getDate();
+
+
+  var daysPassed = 1;
+  var totalDaysThisMonth = 0;
+
+  if (day < payday) {
+    daysPassed += amountOfDaysInPrevMonth() - payday;
+    daysPassed += day;
+    totalDaysThisMonth = amountOfDaysInPrevMonth();
+  } else {
+    daysPassed += day - payday;
+    totalDaysThisMonth = amountOfDaysInThisMonth();
+  }
+
+  var daysLeft = totalDaysThisMonth - daysPassed;
+  var amountLeft = dailyBudget * daysLeft;
+  var amountLeftHigh = dailyBudget * (daysLeft+1);
+  document.getElementById('amount').innerHTML = amountLeft;
+  document.getElementById('amount-high').innerHTML = amountLeftHigh;
+
+  function amountOfDaysInThisMonth() {
+    var d = new Date();
+    return new Date(d.getFullYear(), d.getMonth(), 0).getDate();
+  }
+
+  function amountOfDaysInPrevMonth() {
+    var d = new Date();
+    var day = d.getDay();
+    var time = d.getTime();
+    var prev = time - (day+1)*3600*1000;
+
+    var prevD = new Date(prev);
+    return new Date(prevD.getFullYear(), prevD.getMonth(), 0).getDate();
+  }
+</script>
