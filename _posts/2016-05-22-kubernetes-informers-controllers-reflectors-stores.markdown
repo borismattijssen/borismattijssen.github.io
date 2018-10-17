@@ -134,7 +134,7 @@ c-framework
 
 Let's see how this works! Line 3 declares a source. This source will usually be a client to the API server. For now it's a fake source, such that we can control its behavior. Line 6 declares the downstream store, which we'll use to have a local representation of the source. Line 12 declares a *DeltaFIFO* queue, which is used to keep track of the differences between source and downstream. To configure the controller we give it the FIFO queue, the source, and a process function.
 
-The process loop contains the logic to bring the current state of the system to the desired state. The process function receives an *obj*, which is an array of  *[Delta](//github.com/kubernetes/kubernetes/blob/82cb4c17581752ae9f00bd746a63e529149c04b4/pkg/client/cache/delta_fifo.go#L532){:target="_blank"}*s from the FIFO queue. In our example we check if the delta is of any type other then *Deleted*. In that case the *Object* belonging to the delta is added to the downstream and the Object is removed from the source. If the delta is of type *Deleted*, the Object is removed from the downstream and a message is sent on the *deletionCounter* channel.
+The process loop contains the logic to bring the current state of the system to the desired state. The process function receives an *obj*, which is an array of  *[Delta](//github.com/kubernetes/kubernetes/blob/82cb4c17581752ae9f00bd746a63e529149c04b4/pkg/client/cache/delta_fifo.go#L532){:target="_blank"}*s from the FIFO queue. In our example we check if the delta is of any type other than *Deleted*. In that case the *Object* belonging to the delta is added to the downstream and the Object is removed from the source. If the delta is of type *Deleted*, the Object is removed from the downstream and a message is sent on the *deletionCounter* channel.
 
 When I ran the example for the first time, I was a bit confused by `if newest.Type != cache.Deleted` on line 31. Why not simply check if type is *Added*? I decided to put the following print statement on line 30: `fmt.Printf("[%v] %v\n", newest.Object.(*api.Pod).Name, newest.Type)`. This is the output I got:
 {% highlight bash %}
@@ -171,7 +171,7 @@ func (c *Controller) Run(stopCh <-chan struct{}) {
 }
 {% endhighlight %}
 
-First a new reflector is created. We give it both the *ListerWatcher* (source) and *Queue* (DeltaFIFO). Then *RunUntil* is called on the reflector, which is a non-blocking call. Lastly the processLoop is called using *[wait.Until](//github.com/kubernetes/kubernetes/blob/82cb4c17581752ae9f00bd746a63e529149c04b4/pkg/util/wait/wait.go#L46){:target="_blank"}*. The processLoop drains the FIFO queue and calls the Process function with the popped Deltas from the queue:
+First a new reflector is created. We give it both the *ListerWatcher* (source) and *Queue* (DeltaFIFO). Then, *RunUntil* is called on the reflector, which is a non-blocking call. Lastly the processLoop is called using *[wait.Until](//github.com/kubernetes/kubernetes/blob/82cb4c17581752ae9f00bd746a63e529149c04b4/pkg/util/wait/wait.go#L46){:target="_blank"}*. The processLoop drains the FIFO queue and calls the Process function with the popped Deltas from the queue:
 {% highlight go linenos %}
 func (c *Controller) processLoop() {
   for {
@@ -261,7 +261,7 @@ func (r *Reflector) ListAndWatch(stopCh <-chan struct{}) error {
 The comment above the method says: "ListAndWatch first lists all items and get[s] the resource version at the moment of call, and then use[s] the resource version to watch". So basically this is what happens:
 ![Reflector timeline]({{ site.url }}/images/Reflector Time Diagram.png)
 
-At time <span style="color:#f44d82">t=0</span> we list the ListerWatcher -- which is the upstream source in our case. From the List we get the highest *resourceVersion* of all items in the list. At <span style="color:#4d82f4">t>0</span> we keep watching the ListerWatcher for changes newer then the obtained resourceVersion. <span class="nice-italic">If you don't know what resource versions are, check the [API conventions](//github.com/kubernetes/kubernetes/blob/master/docs/devel/api-conventions.md#concurrency-control-and-consistency){:target="_blank"}.</span>
+At time <span style="color:#f44d82">t=0</span> we list the ListerWatcher -- which is the upstream source in our case. From the List we get the highest *resourceVersion* of all items in the list. At <span style="color:#4d82f4">t>0</span> we keep watching the ListerWatcher for changes newer than the obtained resourceVersion. <span class="nice-italic">If you don't know what resource versions are, check the [API conventions](//github.com/kubernetes/kubernetes/blob/master/docs/devel/api-conventions.md#concurrency-control-and-consistency){:target="_blank"}.</span>
 
 So how does that translate to the code of ListAndWatch? At line 14 (<span style="color:#f44d82">t=0</span>) *List* gets called. The *items* from the list are passed to the syncWith method. SyncWith calls store.Replace with the items of the list:
 {% highlight go linenos %}
