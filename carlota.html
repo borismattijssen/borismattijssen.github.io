@@ -18,6 +18,17 @@ permalink: /hi-carlota
     <script src='https://unpkg.com/es6-promise@4.2.4/dist/es6-promise.auto.min.js'></script>
     <script src="https://unpkg.com/@mapbox/mapbox-sdk/umd/mapbox-sdk.min.js"></script>
     <script>
+
+    var daysMapping = {
+      1: 'Mon',
+      2: 'Tue',
+      3: 'Wed',
+      4: 'Thu',
+      5: 'Fri',
+      6: 'Sat',
+      7: 'Sun'
+    }
+
     mapboxgl.accessToken = 'pk.eyJ1IjoiYm9yaXNtYXR0aWpzc2VuIiwiYSI6ImNqdnl4NDJkdDBpdnc0NG1xc2tydzNvb3IifQ.ltgrQA6Zrvw6EzsHDsqG5Q';
     var map = new mapboxgl.Map({
       container: 'map',
@@ -28,31 +39,46 @@ permalink: /hi-carlota
 
     var mapboxClient = mapboxSdk({ accessToken: mapboxgl.accessToken });
 
-    var places = ['Happyhappyjoyjoy', 'Panache', 'Salmuera', 'Pesca', 'Morgan&mees', 'Tingis', 'Van \'t spit', 'Rotisserie/fier', 'Piccolo', 'Foodhallen', 'Cantinetta', 'Plato loco', 'Hendrix', 'De dikke graaf', 'Juice&salad', 'Staring at jacob', 'Teds','Hangar', 'Rolling rock kitchen', 'Stork', 'Goudfazant', 'De ceuvel', 'Cafe Modern', 'Bistro noord', 'Tht', 'Noorderlicht', 'Pllek', 'Il pecorino', 'De toren adam moon en madam', 'Het schoolhuis holysloot', 'Choux', '&samhoud', 'Lastage', 'Happy happy joy joy', 'Afusion zeedijk', 'Marius/worstwijn', 'Nevel', 'Wolf atelier', 'Mr nielssen', 'Breitner', 'Mossel&gin', 'Bak', 'Bistrot neuf', 'Warenhuis', 'Daalder', 'Fraiche', 'Toscanini', 'Bordewijk', 'Balthazars keuken', 'Waterkant', 'Donna sofia', 'Lo Stivale d\'oro', 'De kroon', 'Waldorf: Librijes zusje', 'Hotel w: Mr porter/the dutchess', 'Staets', 'Baret', 'Lo stivare doro', 'ThatS amore', 'Cacerola', 'Hoxton', 'Terpentijn ', 'Adam en siam', 'Cafe ouest/de drie graefjes', 'Hotel V: the lobby', 'Kaagman&kortekaas', 'Venus&adonis', 'Bleu', 'Blue boy', 'Genki garden', 'Breda', 'De luwte', 'Van harte', 'Kagetsu', 'Pulitzer: jansz', 'Nooch', 'Wolvenstr.', 'Beulings', 'Bussia', 'Black&blue', 'Johannes', 'Chez georges', 'Gebr hartering', 'John dory', 'Zoku', 'Incanto', 'Red', 'Nitro coffee in de boca bar', 'Ponte arcari', 'Roses cantina', 'Snappers', 'Guts&glory', 'Hummbar', 'Toon', 'O mai', 'Utrechtsedwarstafel', 'Bar moustache', 'Tagore', 'Ku kitchen', 'Ali ocakbasi', 'The french connection/Apt.', 'Mimi', 'Mayur', 'Gekke chinees in korte', 'Bo nam', 'An', 'Oesterbar', 'Ron gastrobar paris', 'Pho', 'San george', 'Ron gastrobar oriental', 'Rijks', 'Taiko/conservatorium', 'Seafood bar', 'Buffet van odette', 'Lavinia goodfood', 'Gartine', 'Paper planes', 'Zuivere koffie', 'Waldorf: Goldfinch', 'Toos&roos', 'Marie stella maris', 'Goodies, ree7, dr blend, vegabond', 'Caffe 500', 'Auberge', 'Miss korea bbq', 'Floreyn', 'Frnzy', 'Grahams kitchen', 'Cafe caron', 'Freshler', 'Calle ocho', 'De japanner', 'En japans ', 'Glouglou', 'District V', 'Pho 91', 'Izakaya', 'Peekelharing/spaghetteria', 'Snckbr', 'Taco cartel', 'Cafe carbon', 'Mana mana', 'Cannibale royale', 'Thai cafe', 'Thrill grill', 'Venster 33', 'Brut de mer', 'Paulus', 'Sinne', 'Reuring/de paskamer', 'Little collins', 'Julius', 'Bakers&roasterz', 'Coffee&coconuts', 'Anne&max/wasserette', 'Sir hummus', 'Breakfast club', 'Weesper', 'Kees', 'Woo bros', 'Wilde zwijnen', 'Smokin barrels/bar brouw', 'Volkshotel', 'Eastside', 'Boiboi', 'Stek', 'G\'s', 'Eddy spaghetti', 'Plantage', 'East 57', 'Walter woodbury', 'Rum barrel', 'Louie louie', 'Pool room', 'De kas', 'Merkelbach', 'De vergulden eenhoorn', 'Ron gastrobar', 'Franklin', 'The red sun', 'Atelier', 'Citroen garage', 'Bautzuid', 'Braai', 'De joffers', 'Het blauwe theehuis', 'Chang-i', 'Dragon-i', 'Visaandeschelde', 'Kaiko', 'Sapporo', 'Roast room', 'La maria/cotignac', 'As', 'Vandaag', 'Thuis a/d amstel', 'De kruitfabriek', ''];
+    var rawFile = new XMLHttpRequest();
+    rawFile.open("GET", "hi-carlota.json", false);
+    rawFile.onreadystatechange = function () {
+      if(rawFile.readyState === 4) {
+          if(rawFile.status === 200 || rawFile.status == 0) {
+            var allText = rawFile.responseText;
+            var places = JSON.parse(allText);
+            console.log(places);
+            for(i in places) {
+              var place = places[i];
+              var hours = {};
 
-    for(i in places) {
-      var place = places[i];
-      mapboxClient.geocoding.forwardGeocode({
-        query: place + ' amsterdam',
-        autocomplete: false,
-        limit: 1
-      })
-      .send()
-      .then(function (response) {
-        if (response && response.body && response.body.features && response.body.features.length) {
-          var feature = response.body.features[0];
+              for(j in place.hours.hours.timeframes){
+                var timeframe = place.hours.hours.timeframes[j];
+                for(k in timeframe.days) {
+                  var day = timeframe.days[k];
+                  hours[day] = daysMapping[day] + ': ' + timeframe.open.map(x => x['start'] + ' - ' + x['end']).join(',');
+                }
+              }
 
-          // create the popup
-          var popup = new mapboxgl.Popup({ offset: 25 })
-          .setText(feature.text);
+              var body = [];
+              for(day in daysMapping) {
+                body.push(hours[day]);
+              }
 
-          new mapboxgl.Marker()
-            .setLngLat(feature.center)
-            .setPopup(popup)
-            .addTo(map);
-        }
-      });
+              // create the popup
+              var popup = new mapboxgl.Popup({ offset: 25 })
+              .setHTML('<b>' + place.name + '</b><p>' + body.join('<br>') + '</p>');
+
+              new mapboxgl.Marker()
+                .setLngLat([place.location.lng, place.location.lat])
+                .setPopup(popup)
+                .addTo(map);
+            }
+
+          }
+      }
     }
+    rawFile.send(null);
+
 
     </script>
   </body>
